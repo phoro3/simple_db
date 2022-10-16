@@ -1,3 +1,5 @@
+import sys
+
 class Node:
     def __init__(self, height, key, x):
         self.height = height
@@ -63,6 +65,7 @@ class AvlTree:
     def __init__(self):
         self.root = None
         self.active = False # 修正中かを示すフラグ
+        self.size = 0
 
     def _balance_left(self, t):
         if not self.active: return t
@@ -93,6 +96,7 @@ class AvlTree:
     def set(self, key, value):
         self.active = False
         self.root = self._insert(self.root, key, value)
+        self.set_size(key, value)
 
     def _insert(self, t, key, value):
         if t is None:
@@ -133,6 +137,13 @@ class AvlTree:
 
     def to_str(self):
         return self.root.to_str()
+
+    def set_size(self, key, value):
+        total_size = sys.getsizeof(key) + sys.getsizeof(value)
+        self.size += total_size
+
+    def get_size(self):
+        return self.size
 
 # 動作確認用コード
 if __name__ == "__main__":
