@@ -90,7 +90,7 @@ class AvlTree:
         self.active = (h != height(t))
         return t
 
-    def insert(self, key, value):
+    def set(self, key, value):
         self.active = False
         self.root = self._insert(self.root, key, value)
 
@@ -120,7 +120,7 @@ class AvlTree:
                 return True
         return False
 
-    def lookup(self, key):
+    def search(self, key):
         t = self.root
         while t is not None:
             if key < t.key:
@@ -143,10 +143,10 @@ if __name__ == "__main__":
     answer = {}
     for key in range(N):
         value = random.randrange(N)
-        tree.insert(key, value)
+        tree.set(key, value)
         answer[key] = value
     for key in answer:
-        if (not tree.is_member(key)) or tree.lookup(key) != answer[key]:
+        if (not tree.is_member(key)) or tree.search(key) != answer[key]:
             insertion_erros += 1
     print("insertion errors:", insertion_erros)
     print(tree.to_str())
