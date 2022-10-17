@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
     db = SimpleDb()
     max_key_length = 8
-    N = 5000
+    N = 250000
     answer = {}
     for _ in range(N):
         key_length = random.randrange(2, max_key_length)
@@ -26,8 +26,13 @@ if __name__ == "__main__":
         answer[key] = value
         db.set(key, value)
 
+    print("finish inserting")
+    print("len: ", len(answer.keys()))
     insertion_error = 0
-    for key, value in answer.items():
+    for i, item in enumerate(answer.items()):
+        if i % 10000 == 0:
+            print("current: ", i)
+        key, value = item
         db_ret = db.search(key)
         if db_ret != value:
             insertion_error += 1
