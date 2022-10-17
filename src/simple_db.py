@@ -48,4 +48,21 @@ class SimpleDb:
         self.sstable_index_dic[file_path] = (sampled_memetable_keys, index_offsets)
 
     def search(self, key):
-        return self.memtable.search(key)
+        memtable_val = self.memtable.search(key)
+        if memtable_val is not None:
+            return memtable_val
+
+        for sstable in reversed(self.sstable_list):
+            result = self._search_sstable(sstable, key)
+            if result is not None:
+                return result
+
+        return None
+
+    def _search_sstable(self, sstable, key):
+        with open(sstable, "r") as f:
+            for line in f:
+                sstable_key, value = line.rstrip().split(self.SEPARATOR)
+                if sstable_key == key:
+                    return value
+        return None
