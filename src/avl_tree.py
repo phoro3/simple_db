@@ -8,17 +8,29 @@ class Node:
         self.lst = None
         self.rst = None
 
-    def to_str(self):
+    def to_str(self, separator):
         if self.height == 1:
-            return str(self.key) + "," + str(self.value) + "\n"
+            return str(self.key) + separator + str(self.value) + "\n"
 
         node_str = ""
         if self.lst is not None:
-            node_str += self.lst.to_str()
-        node_str += str(self.key) + "," + str(self.value) + "\n"
+            node_str += self.lst.to_str(separator)
+        node_str += str(self.key) + separator + str(self.value) + "\n"
         if self.rst is not None:
-            node_str += self.rst.to_str()
+            node_str += self.rst.to_str(separator)
         return node_str
+
+    def get_keys(self):
+        if self.height == 1:
+            return [self.key]
+
+        keys = []
+        if self.lst is not None:
+            keys += self.lst.get_keys()
+        keys += [self.key]
+        if self.rst is not None:
+            keys += self.rst.get_keys()
+        return keys
 
 def height(t):
     return 0 if t is None else t.height
@@ -135,8 +147,8 @@ class AvlTree:
                 return t.value
         return None
 
-    def to_str(self):
-        return self.root.to_str()
+    def to_str(self, separator):
+        return self.root.to_str(separator)
 
     def set_size(self, key, value):
         total_size = sys.getsizeof(key) + sys.getsizeof(value)
@@ -144,6 +156,9 @@ class AvlTree:
 
     def get_size(self):
         return self.size
+
+    def get_keys(self):
+        return self.root.get_keys()
 
 # 動作確認用コード
 if __name__ == "__main__":
