@@ -2,6 +2,7 @@ from simple_db import SimpleDb
 import os
 from string import ascii_lowercase
 import random
+import time
 
 def create_random_string(length):
     rand_char_list = random.choices(ascii_lowercase, k=length)
@@ -16,8 +17,10 @@ if __name__ == "__main__":
 
     db = SimpleDb()
     max_key_length = 8
-    N = 250000
+    N = 10000
     answer = {}
+
+    insertion_start = time.time()
     for _ in range(N):
         key_length = random.randrange(2, max_key_length)
         key = create_random_string(key_length)
@@ -26,8 +29,9 @@ if __name__ == "__main__":
         answer[key] = value
         db.set(key, value)
 
-    print("finish inserting")
-    print("len: ", len(answer.keys()))
+    print("finish inserting {}s".format(time.time() - insertion_start))
+
+    search_start = time.time()
     insertion_error = 0
     for i, item in enumerate(answer.items()):
         if i % 10000 == 0:
@@ -36,4 +40,5 @@ if __name__ == "__main__":
         db_ret = db.search(key)
         if db_ret != value:
             insertion_error += 1
+    print("finish search {}s".format(time.time() - search_start))
     print("insertion error: ", insertion_error)

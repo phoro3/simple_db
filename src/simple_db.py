@@ -4,15 +4,15 @@ import os
 import bisect
 
 class SimpleDb:
-    MB = 1024 * 1024
-    MEMTABLE_THREASHOLD = 20 * MB
+    KB = 1024
+    MEMTABLE_THREASHOLD = 500 * KB
     DATA_DIR = "tmp/"
     KEY_SAMPLING_RATE = 100
     SEPARATOR = ","
 
     def __init__(self):
         self.memtable = MemTable()
-        self.sstable_list = []
+        self.sstable_file_obj_list = []
         self.sstable_index_dic = {} # {"key": (key_list, offset_list)}
 
     def set(self, key, value):
@@ -26,8 +26,10 @@ class SimpleDb:
         file_name = str(uuid.uuid4())
         file_path = os.path.join(self.DATA_DIR, file_name)
         self.memtable.write(file_path, self.SEPARATOR)
-        self.sstable_list.append(file_path)
         self._create_sstable_index(file_path)
+        f = open(file_path, mode="r")
+        self.sstable_file_obj_list.append(f)
+
 
     def _clear_memtable(self):
         self.memtable.clear()
@@ -53,15 +55,15 @@ class SimpleDb:
         if memtable_val is not None:
             return memtable_val
 
-        for sstable in reversed(self.sstable_list):
-            result = self._search_sstable(sstable, key)
+        for sstable_file_obj in reversed(self.sstable_file_obj_list):
+            result = self._search_sstable(sstable_file_obj, key)
             if result is not None:
                 return result
 
         return None
 
-    def _search_sstable(self, sstable, key):
-        sstable_index = self.sstable_index_dic[sstable]
+    def _search_sstable(self, sstable_file_obj, key):
+        sstable_index = self.sstable_index_dic[sstable_file_obj.name]
         key_list, offset_list = sstable_index
         key_pos = bisect.bisect_right(key_list, key)
         target_offset = offset_list[key_pos - 1]
@@ -69,18 +71,17 @@ class SimpleDb:
         if key_pos < len(key_list):
             target_next_offset = offset_list[key_pos]
 
-        with open(sstable, "r") as f:
-            f.seek(target_offset)
-            if target_next_offset is not None:
-                while f.tell() <= target_next_offset:
-                    line = f.readline()
-                    sstable_key, value = line.rstrip().split(self.SEPARATOR)
-                    if sstable_key == key:
-                        return value
-            else:
-                for line in f:
-                    sstable_key, value = line.rstrip().split(self.SEPARATOR)
-                    if sstable_key == key:
-                        return value
+        sstable_file_obj.seek(target_offset)
+        if target_next_offset is not None:
+            while sstable_file_obj.tell() <= target_next_offset:
+                line = sstable_file_obj.readline()
+                sstable_key, value = line.rstrip().split(self.SEPARATOR)
+                if sstable_key == key:
+                    return value
+        else:
+            for line in sstable_file_obj:
+                sstable_key, value = line.rstrip().split(self.SEPARATOR)
+                if sstable_key == key:
+                    return value
 
         return None
