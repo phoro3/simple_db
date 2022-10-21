@@ -44,7 +44,7 @@ if __name__ == "__main__":
     for file in file_names:
         os.remove(os.path.join(data_dir_name, file))
 
-    N = 10000
+    N = 25000
     answer = prepare_data(N)
 
     print("SimpleDb")
